@@ -56,6 +56,9 @@ velocity = [0] * (frame_amount)
 velocity_x = [0] * frame_amount
 velocity_y = [0] * frame_amount
 
+center = [0]*frame_amount
+center_prev = [0]*frame_amount
+
 for i in range(frame_amount):
     half_window = w/2
     if i - 1 == -1:
@@ -78,7 +81,6 @@ for i in range(frame_amount):
             x_stop = img.shape[1]
         else:
             x_stop = x_start + w
-        # print(x_start,x_stop,y_start,y_stop)
         img_crop = data[i][int(x_start):int(x_stop), int(y_start):int(y_stop)]
         #cv2.imshow('crop',img_crop),cv2.waitKey(0), cv2.destroyAllWindows()
 
@@ -91,9 +93,9 @@ for i in range(frame_amount):
 
     #print("Estimated position: ",est_x,est_y)
     if i == 0:
-        x_prime[i] = est_x + 11 #why 11 & 17?
+        x_prime[i] = est_x  #why 11 & 17?
 
-        y_prime[i] = est_y + 17
+        y_prime[i] = est_y
     else:
         if x_prime[i - 1] - half_window < 0:
             x_prime[i] = x_prime[i - 1] - half_window + est_x + (half_window - x_prime[i - 1])
@@ -115,9 +117,23 @@ for i in range(frame_amount):
         #cv2.imshow('final', template_o), cv2.waitKey(0), cv2.destroyAllWindows() #run to see the template used for the search in the next frame
 
         template = np.float32(template_o)
-        res_2 = cv2.matchTemplate(template, template_2, method)
+        #res_2 = cv2.matchTemplate(template, template_2, method)
 
-        min_val_2[i], max_val_2[i], min_loc_2[i], max_loc_2[i] = cv2.minMaxLoc(res_2)
+        #min_val_2[i], max_val_2[i], min_loc_2[i], max_loc_2[i] = cv2.minMaxLoc(res_2)
+
+        template_c = cv2.cvtColor(template_o, cv2.COLOR_BGR2GRAY)
+        template_c = cv2.medianBlur(template_c, 5)
+
+        circles = cv2.HoughCircles(template_c, cv2.HOUGH_GRADIENT, 1.5, 20,
+                                   param1=50, param2=30, minRadius=0, maxRadius=0)
+        circles = np.uint16(np.around(circles))
+        #print(circles)
+        #cv2.circle(template_o, (circles[0][0][0], circles[0][0][1]), circles[0][0][2], (0, 255, 0), 2)
+        # draw the center of the circle
+        cv2.circle(template_o, (circles[0][0][0], circles[0][0][1]), 2, (0, 0, 255), 3)
+        #cv2.imshow('circles', template_o), cv2.waitKey(0), cv2.destroyAllWindows()
+
+        min_loc_2[i] = (circles[0][0][0],circles[0][0][1])
         #print(min_loc_2[i][1],min_loc_2[i][0])
 
         #cv2.circle(template_o, (int(min_loc_2[i][0]+1) + int(template_y_2 / 2), int(min_loc_2[i][1]) + int(template_x_2 / 2)), 2,
@@ -127,46 +143,62 @@ for i in range(frame_amount):
         #cv2.imshow('final', template_o), cv2.waitKey(0), cv2.destroyAllWindows()
 
 
-        x_prime[i] = x_prime[i] + template_x / 2 - template_x_2 / 2 + min_loc_2[i][1] #used for double template matching
-        y_prime[i] = y_prime[i] + template_y / 2 - template_y_2 / 2 + min_loc_2[i][0]
+        x_prime[i] = x_prime[i] - template_x / 2 + min_loc_2[i][1] #used for double template matching - template_x_2 / 2
+        y_prime[i] = y_prime[i] - template_y / 2  + min_loc_2[i][0] #- template_y_2 / 2
 
         #print("2",y_prime[i], x_prime[i])
         #print("--------------")
 
     # print("--------------")
-    velocity_x[i] = abs(x_prime[i] - x_prime[i - 1])/fps
-    velocity_y[i] = abs(y_prime[i] - y_prime[i - 1])/fps
 
-    #print(velocity_x[i],velocity_y[i])
-    #print(w)
 #velocity[0] = 0
-#plt.plot(velocity),plt.ylabel('Velocity (m/s)'),plt.xlabel('Frame'),plt.show()
 
 for i in range(frame_amount):
     if i - 1 == -1:
         i = i + 1
-    #print(y_prime[i-1],x_prime[i-1])
-    center_prev = (int(y_prime[i-1]-(int(template_y/2)-int(template_y_2/2))+int(template_y_2/2)), int(x_prime[i-1]-(int(template_x/2)-int(template_x_2/2))+template_x_2/2))
-    center = (int(y_prime[i]-(int(template_y/2)-int(template_y_2/2))+int(template_y_2/2)), int(x_prime[i]-(int(template_x/2)-int(template_x_2/2))+template_x_2/2))
+
+    center_prev[i] = (int(y_prime[i-1]-(int(template_y/2)-int(template_y_2/2))+int(template_y_2/2)), int(x_prime[i-1]-(int(template_x/2)-int(template_x_2/2))+template_x_2/2))
+    center[i] = (int(y_prime[i]-(int(template_y/2)-int(template_y_2/2))+int(template_y_2/2)), int(x_prime[i]-(int(template_x/2)-int(template_x_2/2))+template_x_2/2))
+
+    velocity_x[i] = abs(center[i][0] - center_prev[i][0]) / fps
+    velocity_y[i] = abs(center[i][1] - center_prev[i][1]) / fps
+    velocity[i] = math.sqrt(math.pow(velocity_x[i], 2) + math.pow(velocity_y[i], 2))
+    print(velocity[i])
+
     #center_prev = (int(y_prime[i-1]+(int(template_y/2))), int(x_prime[i-1]+(int(template_x/2))))
     #center = (int(y_prime[i]+(int(template_y/2))), int(x_prime[i]+(int(template_x/2))))
-    cv2.line(data[i], center_prev , center , (255, 255, 255), 1)
-    cv2.circle(data[i],  (center[0],center[1]), 2, (0, 0, 255), -1)
-    #print("Actual position: ",center[0], center[1])
-    #rect = cv2.rectangle(data[i], (int(y_prime[i]-(int(template_y/2)-int(template_y_2/2))),int(x_prime[i]-(int(template_x/2)-int(template_x_2/2)))), (int(y_prime[i]-(int(template_y/2)-int(template_y_2/2))+template_y_2),int(x_prime[i]-(int(template_x/2)-int(template_x_2/2))+template_x_2)), (0, 255, 0),1)
-    cv2.rectangle(data[i],((center[0]-int(template_y/2)),center[1]-int(template_x/2)),((center[0]+int(template_y/2)),center[1]+int(template_x/2)), (0, 255, 0),2)
-    cv2.rectangle(data[i], ((center[0] - int(template_y_2 / 2)), center[1] - int(template_x_2 / 2)),
-                         ((center[0] + int(template_y_2 / 2)), center[1] + int(template_x_2 / 2)), (0, 255, 0), 2)
-    #path = 'C:\\Users\\fatma\\Desktop\\Bilardo\\Pool_Table_Docs\\processed_data'
-    #cv2.imwrite(os.path.join(path, 'img_%d.jpg' %i), imS)
-    data[i][(center[1]-int(template_x_2/2)-1):(center[1]+int(template_x_2/2)),(center[0]+int(template_y_2/2)):(center[0]+int(3*template_y_2/2)),:] = template_2_o
-    cv2.rectangle(data[i],(center[0]+int(template_y_2/2),center[1]-int(template_x_2/2)),((center[0]+int(3*template_y_2/2)),(center[1]+int(template_x_2/2))), (0, 255, 0),2)
+    cv2.line(data[frame_amount-1], center_prev[i] , center[i] , (255, 255, 255), 1)
+    cv2.circle(data[frame_amount-1],  (center[i][0],center[i][1]), 2, (0, 0, 255), -1)
 
-    #data[i][950:950+template_x_2, 1800:1800+template_y_2, :] = template_2_o
-    data[i][950:950+template_x, 1700:1700+template_y, :] = big_templates[i]
+    #rect = cv2.rectangle(data[i], (int(y_prime[i]-(int(template_y/2)-int(template_y_2/2))),int(x_prime[i]-(int(template_x/2)-int(template_x_2/2)))), (int(y_prime[i]-(int(template_y/2)-int(template_y_2/2))+template_y_2),int(x_prime[i]-(int(template_x/2)-int(template_x_2/2))+template_x_2)), (0, 255, 0),1)
+    #cv2.rectangle(data[i],((center[0]-int(template_y/2)),center[1]-int(template_x/2)),((center[0]+int(template_y/2)),center[1]+int(template_x/2)), (0, 255, 0),2)
+    #cv2.rectangle(data[i], ((center[0] - int(template_y_2 / 2)), center[1] - int(template_x_2 / 2)),
+                         #((center[0] + int(template_y_2 / 2)), center[1] + int(template_x_2 / 2)), (0, 255, 0), 2)
+
     imS = cv2.resize(data[i], (1200, 706))
     cv2.imshow('final', imS), cv2.waitKey(0), cv2.destroyAllWindows()
 
+#plt.plot(velocity),plt.ylabel('Velocity (m/s)'),plt.xlabel('Frame'),plt.show()
 print("--- %s seconds ---" % (time.time() - start_time))
 imS = cv2.resize(data[frame_amount-1], (960, 540))
 cv2.imshow('final', imS), cv2.waitKey(0),cv2.destroyAllWindows()
+
+
+path = 'C:\\Users\\fatma\\Desktop\\Bilardo\\Pool_Table_Docs\\processed_data'
+
+# for i in range(frame_amount-4):
+#     i = i + 3
+#     for k in range(i-2):
+#         k = k + 2
+#         cv2.line(data[i], center_prev[k], center[k], (255, 255, 255), 2)
+#     imS = cv2.resize(data[i], (960, 540))
+#     font = cv2.FONT_HERSHEY_SIMPLEX
+#     cv2.putText(imS,str(velocity[i]), (700, 500), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
+#     #print("i ",i,center[i])
+#     cv2.imshow('final', imS), cv2.waitKey(0), cv2.destroyAllWindows()
+#     if i<10:
+#         cv2.imwrite(os.path.join(path, 'img_00%d.jpg' % i), imS)
+#     elif i>=10 and i<100:
+#         cv2.imwrite(os.path.join(path, 'img_0%d.jpg' % i), imS)
+#     else:
+#         cv2.imwrite(os.path.join(path, 'img_%d.jpg' % i), imS)
