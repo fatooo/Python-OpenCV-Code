@@ -1,24 +1,25 @@
 import cv2
 import numpy as np
-import os
-import glob
 import time
 import math
-import matplotlib.pyplot as plt
+from datetime import datetime
+
+dateTimeObj = datetime.now()
+dateObj = dateTimeObj.date()
+timeObj = dateTimeObj.time()
+timeStr = timeObj.strftime("%H%M%S")
+dateStr = dateObj.strftime("%b%d%Y")
 
 start_time = time.time()
 
-img_dir = "C:\\Users\\fatma\\Desktop\\Bilardo\\Pool_Table_Docs\\video_data2"  # Enter Directory of all images
-data_path = os.path.join(img_dir, '*g')
-files = glob.glob(data_path)
 big_templates = []
 initial_window = 250
 fps = 30 #frames per second
 ppm_x = 550 #pixel per meter for x axis
 ppm_y = 637 #pixel per meter for y axis
 w = initial_window
-template_o = cv2.imread('red_big_2.png')
-template_2_o = cv2.imread('red_2.png')
+template_o = cv2.imread('C:\\Users\\fatma\\PycharmProjects\\pythonProject\\Templates\\red_big_2.png')
+template_2_o = cv2.imread('C:\\Users\\fatma\\PycharmProjects\\pythonProject\\Templates\\red_2.png')
 #template = cv2.GaussianBlur(template,(9,9),-1)
 template = np.float32(template_o)
 template_2= np.float32(template_2_o)
@@ -31,7 +32,7 @@ template_y_2 = template_2.shape[1]
 #template_y_2 = 0
 #print(template_x_2,template_y_2)
 
-frame_amount = 420  #152 for 20fps & 39 for 5 fps & 43 for 5fps new & 225 for 30fps & 422 for salon data
+frame_amount = 450  #152 for 20fps & 39 for 5 fps & 43 for 5fps new & 225 for 30fps & 422 for salon data
 
 method = cv2.TM_SQDIFF_NORMED  #method used to check the correlation between the template and the frame
 
@@ -57,7 +58,7 @@ center_prev = [0]*frame_amount
 
 data = [0] * frame_amount
 
-cap = cv2.VideoCapture('video1.mp4')
+cap = cv2.VideoCapture('video4.mp4')
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 out = cv2.VideoWriter('output.avi', fourcc, 20.0, (768,576))
 
@@ -158,21 +159,6 @@ while(i<frame_amount-1):
 
     min_val_2[i], max_val_2[i], min_loc_2[i], max_loc_2[i] = cv2.minMaxLoc(res_2)
 
-        #template_c = cv2.cvtColor(template_o, cv2.COLOR_BGR2GRAY)
-        #template_c = cv2.medianBlur(template_c, 5)
-
-        #circles = cv2.HoughCircles(template_c, cv2.HOUGH_GRADIENT, 1.5, 20,
-                                   #param1=50, param2=30, minRadius=0, maxRadius=22)
-        #circles = np.uint16(np.around(circles))
-        #print(circles)
-        #cv2.circle(template_o, (circles[0][0][0], circles[0][0][1]), circles[0][0][2], (0, 255, 0), 2)
-        # draw the center of the circle
-        #cv2.circle(template_o, (circles[0][0][0], circles[0][0][1]), 2, (0, 0, 255), 3)
-        #cv2.imshow('circles', template_o), cv2.waitKey(0), cv2.destroyAllWindows()
-
-        #min_loc_2[i] = (circles[0][0][0],circles[0][0][1])
-        #print(min_loc_2[i][1],min_loc_2[i][0])
-
     #cv2.circle(template_o, (round(min_loc_2[i][0]+1) + round(template_y_2 / 2), round(min_loc_2[i][1]) + round(template_x_2 / 2)), 2,
                    #(0, 0, 255), -1)
     #rect = cv2.rectangle(template_o, (int(min_loc_2[i][0]+2), int(min_loc_2[i][1])),
@@ -180,8 +166,8 @@ while(i<frame_amount-1):
     #cv2.imshow('final', template_o), cv2.waitKey(0), cv2.destroyAllWindows()
 
 
-    x_prime[i] = x_prime[i] + template_x / 2 + min_loc_2[i][1] - template_x_2 / 2  #used for double template matching
-    y_prime[i] = y_prime[i] + template_y / 2 + min_loc_2[i][0] - template_y_2 / 2
+    x_prime[i] = round(x_prime[i] + template_x / 2 + min_loc_2[i][1] - template_x_2 / 2)  #used for double template matching
+    y_prime[i] = round(y_prime[i] + template_y / 2 + min_loc_2[i][0] - template_y_2 / 2)
 
     #print(min_loc_2[i][1], min_loc_2[i][0])
     center_prev[i] = (
@@ -194,67 +180,20 @@ while(i<frame_amount-1):
     velocity_x[i] = (center[0][i][1] - center_prev[i][1]) * fps / ppm_x
     velocity_y[i] = (center[0][i][0] - center_prev[i][0]) * fps / ppm_y
     velocity[i] = math.sqrt(math.pow(abs(velocity_x[i]), 2) + math.pow(abs(velocity_y[i]), 2))
-    #print(velocity[i])
-    # cv2.line(data[frame_amount - 1], center_prev[i], (center)[0][i][0],center)[0][i][1]), (255, 255, 255), 1)
-    cv2.circle(data[i], (int(center[0][i][0]), int(center[0][i][1])), 2, (0, 0, 255), -1)
+
+    cv2.circle(data[i], (int(center[0][i][0]), int(center[0][i][1])), 2, (0, 255, 0), -1)
 
     imS = cv2.resize(data[i], (1200, 706))
     cv2.imshow('final', imS)#,cv2.waitKey(0), cv2.destroyAllWindows()
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-
     i = i + 1
-
-    #print(velocity[i])
-
-        #print("--------------")
-
-    # print("--------------")
-
-#velocity[0] = 0
-
-# for i in range(frame_amount):
-#     if i - 1 == -1:
-#         i = i + 1
-    #print(velocity[i])
-
-    #center_prev = (int(y_prime[i-1]+(int(template_y/2))), int(x_prime[i-1]+(int(template_x/2))))
-    #center = (int(y_prime[i]+(int(template_y/2))), int(x_prime[i]+(int(template_x/2))))
-
-
-    #rect = cv2.rectangle(data[i], (int(y_prime[i]-(int(template_y/2)-int(template_y_2/2))),int(x_prime[i]-(int(template_x/2)-int(template_x_2/2)))), (int(y_prime[i]-(int(template_y/2)-int(template_y_2/2))+template_y_2),int(x_prime[i]-(int(template_x/2)-int(template_x_2/2))+template_x_2)), (0, 255, 0),1)
-    #cv2.rectangle(data[i],((center[0]-int(template_y/2)),center[1]-int(template_x/2)),((center[0]+int(template_y/2)),center[1]+int(template_x/2)), (0, 255, 0),2)
-    #cv2.rectangle(data[i], ((center[0] - int(template_y_2 / 2)), center[1] - int(template_x_2 / 2)),
-                         #((center[0] + int(template_y_2 / 2)), center[1] + int(template_x_2 / 2)), (0, 255, 0), 2)
-    #font = cv2.FONT_HERSHEY_SIMPLEX
-    # imS = cv2.resize(data[i], (1200, 706))
-    #cv2.putText(imS, str(velocity[i]), (700, 500), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
-    #cv2.imshow('final', imS), cv2.waitKey(0), cv2.destroyAllWindows()
 
 #plt.plot(velocity),plt.ylabel('Velocity (m/s)'),plt.xlabel('Frame'),plt.show()
 velocity[0] = velocity[1]
+# np.savetxt("C:\\Users\\fatma\\PycharmProjects\\pythonProject\\Position and Velocity Data\\"+str(dateStr)+str(timeStr)+'red_center.csv', center[0], delimiter=",")
+# np.savetxt("C:\\Users\\fatma\\PycharmProjects\\pythonProject\\Position and Velocity Data\\"+str(dateStr)+str(timeStr)+'red_velocity.csv', velocity, delimiter=",",fmt='%f')
 np.savetxt("red_center.csv", center[0], delimiter=",")
 np.savetxt("red_velocity.csv", velocity, delimiter=",",fmt='%f')
 print("--- %s seconds ---" % (time.time() - start_time))
-# imS = cv2.resize(data[frame_amount-1], (960, 540))
-# cv2.imshow('final', imS), cv2.waitKey(0),cv2.destroyAllWindows()
-#
-# path = 'C:\\Users\\fatma\\Desktop\\Bilardo\\Pool_Table_Docs\\processed_data1'
 
-# for i in range(frame_amount-4):
-#     i = i + 3
-#     for k in range(i-2):
-#         k = k + 2
-#         cv2.line(data[i], center_prev[k], center[k], (255, 255, 255), 2)
-#         cv2.circle(data[i], (center_prev[k][0],center_prev[k][1]), 2, (0, 0, 255), -1)
-#     imS = cv2.resize(data[i], (960, 540))
-#    # font = cv2.FONT_HERSHEY_SIMPLEX
-#     #cv2.putText(imS,str(round(velocity[i],2)), (700, 500), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
-#     #print("i ",i,center[i])
-#     #cv2.imshow('final', imS), cv2.waitKey(0), cv2.destroyAllWindows()
-#     if i<10:
-#         cv2.imwrite(os.path.join(path, 'img_00%d.jpg' % i), imS)
-#     elif i>=10 and i<100:
-#         cv2.imwrite(os.path.join(path, 'img_0%d.jpg' % i), imS)
-#     else:
-#         cv2.imwrite(os.path.join(path, 'img_%d.jpg' % i), imS)
