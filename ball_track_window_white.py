@@ -30,7 +30,7 @@ template_y = template.shape[1]
 template_x_2 = template_2.shape[0]
 template_y_2 = template_2.shape[1]
 
-frame_amount = 450  #152 for 20fps & 39 for 5 fps & 43 for 5fps new & 225 for 30fps & 422 for salon data
+frame_amount = 240  #152 for 20fps & 39 for 5 fps & 43 for 5fps new & 225 for 30fps & 422 for salon data
 
 method = cv2.TM_SQDIFF_NORMED  #method used to check the correlation between the template and the frame
 
@@ -56,7 +56,7 @@ center_prev = [0]*frame_amount
 
 data = [0] * frame_amount
 
-cap = cv2.VideoCapture('video4.mp4')
+cap = cv2.VideoCapture('zor_video.mp4')
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 out = cv2.VideoWriter('output.avi', fourcc, 30.0, (768,576))
 
@@ -119,7 +119,7 @@ while (i<frame_amount-1):
         #cv2.imshow('crop',imS),cv2.waitKey(0), cv2.destroyAllWindows()
     img_crop_o = img_crop
     img_crop = np.float32(img_crop)
-    if velocity[i-1]<1.5:
+    if velocity[i-1]<2.0:
         template = template_2
     res = cv2.matchTemplate(img_crop, template, method)
     min_val[i], max_val[i], min_loc[i], max_loc[i] = cv2.minMaxLoc(res)
@@ -183,9 +183,9 @@ while (i<frame_amount-1):
     cv2.circle(data[i], (int(center[0][i][0]), int(center[0][i][1])), 2, (0, 0, 255), -1)
 
     imS = cv2.resize(data[i], (1200, 706))
-    cv2.imshow('final', imS)#, cv2.waitKey(0), cv2.destroyAllWindows()
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    cv2.imshow('final', imS), cv2.waitKey(0), cv2.destroyAllWindows()
+    #if cv2.waitKey(1) & 0xFF == ord('q'):
+        #break
     i = i + 1
 
 velocity[0] = velocity[1]

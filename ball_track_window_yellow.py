@@ -29,7 +29,7 @@ template_y = template.shape[1]
 template_x_2 = template_2.shape[0]
 template_y_2 = template_2.shape[1]
 
-frame_amount = 450  #152 for 20fps & 39 for 5 fps & 43 for 5fps new & 225 for 30fps & 422 for salon data
+frame_amount = 240  #152 for 20fps & 39 for 5 fps & 43 for 5fps new & 225 for 30fps & 422 for salon data
 
 method = cv2.TM_SQDIFF_NORMED  #method used to check the correlation between the template and the frame
 
@@ -55,7 +55,7 @@ center_prev = [0]*frame_amount
 
 data = [0] * frame_amount
 
-cap = cv2.VideoCapture('video4.mp4')
+cap = cv2.VideoCapture('zor_video.mp4')
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 out = cv2.VideoWriter('output.avi', fourcc, 20.0, (768,576))
 

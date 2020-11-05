@@ -11,11 +11,11 @@ dateStr = dateObj.strftime("%b%d%Y_")
 
 start_time = time.time()
 i = 0
-frame_amount = 450  #152 for 20fps & 39 for 5 fps & 43 for 5fps new & 225 for 30fps & 422 for salon data
+frame_amount = 240  #152 for 20fps & 39 for 5 fps & 43 for 5fps new & 225 for 30fps & 422 for salon data
 
 data = [0] * frame_amount
 
-cap = cv2.VideoCapture('video4.mp4')
+cap = cv2.VideoCapture('zor_video.mp4')
 fourcc = cv2.VideoWriter_fourcc(*'VIDX')
 out = cv2.VideoWriter('C:\\Users\\fatma\\PycharmProjects\\pythonProject\\Outputs\\'+str(dateStr)+str(timeStr)+'output.mp4v',cv2.VideoWriter_fourcc(*'XVID'),60, (1920, 1080))
 
@@ -40,9 +40,9 @@ while(i<frame_amount-1):
 
     for k in range(i-2):
         k=k+2
-        cv2.line(data[i], (int(data_w[k - 1][0]),int(data_w[k - 1][1])), (int(data_w[k][0]),int(data_w[k][1])), (255, 255, 255), 1)
+        cv2.line(data[i], (int(data_w[k - 1][0]),int(data_w[k - 1][1])), (int(data_w[k][0]),int(data_w[k][1])), (255, 255, 255), 3)
         #print((int(data_w[k - 1][0]),int(data_w[k - 1][1])), (int(data_w[k][0]),int(data_w[k][1])))
-        cv2.line(data[i], (int(data_y[k - 1][0]),int(data_y[k - 1][1])), (int(data_y[k][0]),int(data_y[k][1])), (0, 255, 255), 3)
+        cv2.line(data[i], (int(data_y[k - 1][0]),int(data_y[k - 1][1])), (int(data_y[k][0]),int(data_y[k][1])), (0, 255, 255), 1)
         cv2.line(data[i], (int(data_r[k - 1][0]), int(data_r[k - 1][1])), (int(data_r[k][0]), int(data_r[k][1])),
                 (0, 0, 255), 1)
     font = cv2.FONT_HERSHEY_SIMPLEX
