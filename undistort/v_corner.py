@@ -3,6 +3,8 @@ import cv2
 import glob
 import math
 import argparse
+import timeit
+
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-v", "--video",
@@ -57,6 +59,7 @@ h,  w = img.shape[:2]
 newcameramtx, roi=cv2.getOptimalNewCameraMatrix(mtx,dist,(w,h),1,(w,h))
 mapx,mapy = cv2.initUndistortRectifyMap(mtx,dist,None,newcameramtx,(w,h),5)
 while(1):
+	start = timeit.default_timer()
 	ret, img2 = cap.read()
 
 	# undistort
@@ -77,6 +80,7 @@ while(1):
 	k = cv2.waitKey(30) & 0xff
 	if k == 27:
 		break
-
+	stop = timeit.default_timer()
+	print('Time: ', stop - start)
 
 cv2.destroyAllWindows()
