@@ -6,3 +6,7 @@
 python final.py -v videos/fixed.mp4
 
 alternatif video için hsv değerleri kodun içerisindeki alternatifleriyle değiştirilmeli.
+
+ # Undistortion çalıştırmak için
+ 
+ python v_corner.py -v fisheye1.mp4
