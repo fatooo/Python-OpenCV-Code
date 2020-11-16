@@ -11,6 +11,7 @@ drawBorders: Bilardo masasındaki; iç havuz, dış havuz ve topun yarı çapı 
 import numpy as np
 import cv2
 import argparse
+import timeit
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-v", "--video",
@@ -65,9 +66,15 @@ class Billiards:
 
 		print("Class initialized...")
 
+	# mouse callback function
+	def draw_circle(event,x,y,flags,param):
+	    if event == cv2.EVENT_LBUTTONDBLCLK:
+	        cv2.circle(img,(x,y),100,(255,0,0),-1)
+
 	def cueStickDetector(self):
 		total_lines = []
 		while(1):
+			start = timeit.default_timer()
 			ret, img = cap.read()
 			# (1) create a copy of the original:
 
@@ -179,7 +186,9 @@ class Billiards:
 
 			k = cv2.waitKey(30) & 0xff
 			if k == 27:
-			    break
+					    break
+			stop = timeit.default_timer()
+			print('Time: ', stop - start)
 
 	def drawBorders(self,img_crop):
 		hsv = cv2.cvtColor(img_crop, cv2.COLOR_BGR2HSV)

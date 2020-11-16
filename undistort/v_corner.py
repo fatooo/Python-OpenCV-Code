@@ -11,7 +11,6 @@ ap.add_argument("-v", "--video",
 	help="path to the (optional) video file")
 args = vars(ap.parse_args())
 
-cap = cv2.VideoCapture(args["video"])
 
 def rotate_image(image, angle):
   image_center = tuple(np.array(image.shape[1::-1]) / 2)
@@ -39,17 +38,17 @@ ret, corners = cv2.findChessboardCorners(gray, (15,7),None)
 
 # If found, add object points, image points (after refining them)
 if ret == True:
-    objpoints.append(objp)
+	objpoints.append(objp)
 
-    corners2 = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
+	corners2 = cv2.cornerSubPix(gray,corners,(11,11),(-1,-1),criteria)
 
-    imgpoints.append(corners2)
+	imgpoints.append(corners2)
 
-    # Draw and display the corners
-    img = cv2.drawChessboardCorners(img, (15,7), corners2,ret)
-    cv2.imwrite('alignment/2_calibration_points.png',img)
-    cv2.imshow('img',img)
-    cv2.waitKey()
+	# Draw and display the corners
+	img = cv2.drawChessboardCorners(img, (15,7), corners2,ret)
+	cv2.imwrite('alignment/2_calibration_points.png',img)
+	cv2.imshow('img',img)
+	cv2.waitKey()
 
 
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
@@ -58,29 +57,43 @@ img = cv2.imread('image.jpg')
 h,  w = img.shape[:2]
 newcameramtx, roi=cv2.getOptimalNewCameraMatrix(mtx,dist,(w,h),1,(w,h))
 mapx,mapy = cv2.initUndistortRectifyMap(mtx,dist,None,newcameramtx,(w,h),5)
+
+video = cv2.VideoCapture(args["video"])
+if (video.isOpened() == False):
+	print("Error reading video file")
+frame_width = int(video.get(3))
+frame_height = int(video.get(4))
+x,y,w,h = roi
+size = (1300, 700)
+
+# Below VideoWriter object will create
+# a frame of above defined The output
+# is stored in 'filename.avi' file.
+result = cv2.VideoWriter('filename.mp4',
+						 cv2.VideoWriter_fourcc(*'MP4V'),
+						 30, size)
 while(1):
 	start = timeit.default_timer()
-	ret, img2 = cap.read()
+	ret, img2 = video.read()
+	if ret == True:
+		# undistort
 
-	# undistort
+		#dst = cv2.remap(img2,mapx,mapy,cv2.INTER_LINEAR)
 
-	#dst = cv2.remap(img2,mapx,mapy,cv2.INTER_LINEAR)
-
-	dst = cv2.undistort(img2, mtx, dist, None, newcameramtx)
-	#
-	# crop the image
-	x,y,w,h = roi
-	dst = dst[y:y+h, x:x+w]
-
-	dst=cv2.resize(dst,(1200,700))
-	img2=cv2.resize(img2,(1200,700))
-	cv2.imwrite('calibresult.png',dst)
-	cv2.imshow('dst',dst)
-	cv2.imshow('img2',img2)
-	k = cv2.waitKey(30) & 0xff
-	if k == 27:
+		dst = cv2.undistort(img2.copy(), mtx, dist, None, newcameramtx)
+		#
+		# crop the image
+		x,y,w,h = roi
+		dst = dst[y:y+h, x:x+w]
+		dst = cv2.resize(dst,(1300,700))
+		cv2.imshow('dst',dst)
+		result.write(dst)
+		if cv2.waitKey(1) & 0xFF == ord('s'):
+			break
+	else:
 		break
 	stop = timeit.default_timer()
 	print('Time: ', stop - start)
-
-cv2.destroyAllWindows()
+video.release()
+result.release()
+print("The video was successfully saved")
