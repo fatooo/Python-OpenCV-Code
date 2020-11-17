@@ -122,7 +122,7 @@ def yellow_track(frame,i,data,data_y,template_o,x_prime,y_prime,velocity_x,veloc
             #cv2.imshow('crop',imS),cv2.waitKey(0), cv2.destroyAllWindows()
         img_crop_o = img_crop
         img_crop = np.float32(img_crop)
-        if i>0 and velocity[i-1]<1.0:
+        if i>0 and velocity[i-1]<2.0:
             template = template_2
         #cv2.imshow('crop', template_o), cv2.waitKey(0), cv2.destroyAllWindows()
         res = cv2.matchTemplate(img_crop, template, method)
@@ -167,16 +167,16 @@ def yellow_track(frame,i,data,data_y,template_o,x_prime,y_prime,velocity_x,veloc
         #cv2.imshow('final', template_o), cv2.waitKey(0), cv2.destroyAllWindows()
 
 
-        x_prime[i] = round(x_prime[i] + template_x / 2 + min_loc_2[1] - template_x_2 / 2 ) #used for double template matching
-        y_prime[i] = round(y_prime[i] + template_y / 2 + min_loc_2[0] - template_y_2 / 2 )
+        x_prime[i] = round(x_prime[i] + template_x / 2 + min_loc_2[1]) #used for double template matching
+        y_prime[i] = round(y_prime[i] + template_y / 2 + min_loc_2[0])
 
         #print(min_loc_2[i][1], min_loc_2[i][0])
         center_prev = (
-                round(y_prime[i - 1] - (round(template_y / 2) - round(template_y_2 / 2)) + round(template_y_2 / 2)),
-                round(x_prime[i - 1] - (round(template_x / 2) - round(template_x_2 / 2)) + template_x_2 / 2))
+                round(y_prime[i - 1] - (round(template_y / 2) - round(template_y_2 / 2))),
+                round(x_prime[i - 1] - (round(template_x / 2) - round(template_x_2 / 2))))
 
-        center = (round(y_prime[i] - (round(template_y / 2) - round(template_y_2 / 2)) + round(template_y_2 / 2)),
-                round(x_prime[i] - (round(template_x / 2) - round(template_x_2 / 2)) + template_x_2 / 2))
+        center = (round(y_prime[i] - (round(template_y / 2) - round(template_y_2 / 2))),
+                round(x_prime[i] - (round(template_x / 2) - round(template_x_2 / 2))))
         #print(center[i])
 
         velocity_x.append((center[1] - center_prev[1]) * fps / ppm_x)
@@ -195,8 +195,8 @@ def yellow_track(frame,i,data,data_y,template_o,x_prime,y_prime,velocity_x,veloc
     # np.savetxt("C:\\Users\\fatma\\PycharmProjects\\pythonProject\\Position and Velocity Data\\"+str(dateStr)+str(timeStr)+'white_center.csv', center[0], delimiter=",")
     # np.savetxt("C:\\Users\\fatma\\PycharmProjects\\pythonProject\\Position and Velocity Data\\"+str(dateStr)+str(timeStr)+'white_velocity.csv', velocity, delimiter=",",fmt='%f')
     #np.savetxt("white_center.csv", center, delimiter=",")
-    #np.savetxt("white_velocity.csv", velocity, delimiter=",",fmt='%f')
+    np.savetxt("yellow_velocity.csv", velocity, delimiter=",",fmt='%f')
     #print("--- %s seconds ---" % (time.time() - start_time))
     data_y.append(center)
-    return template_o,velocity_x,velocity_y,velocity,data,data_y,x_start,y_start,x_stop,y_stop
+    return template_o,velocity_x,velocity_y,velocity,data,data_y,x_start,y_start,x_stop,y_stop,center_prev,center
 
