@@ -1,4 +1,4 @@
-def demo(frame,i,data,data_w,data_y,data_r,vel_w,vel_y,vel_r,max_vel_y,max_vel_w,max_vel_r):
+def demo(frame,i,data_w,data_y,data_r,vel_w,vel_y,vel_r,max_vel_y,max_vel_w,max_vel_r,first_move):
 
     import cv2
     import numpy as np
@@ -39,29 +39,28 @@ def demo(frame,i,data,data_w,data_y,data_r,vel_w,vel_y,vel_r,max_vel_y,max_vel_w
     if i>0:
         for k in range(i):
             k = k + 1
-            cv2.line(frame, (int(data_w[k - 1][0]),int(data_w[k - 1][1])), (int(data_w[k][0]),int(data_w[k][1])), (255, 255, 255), 3)
-            cv2.line(frame, (int(data_y[k - 1][0]),int(data_y[k - 1][1])), (int(data_y[k][0]),int(data_y[k][1])), (0, 255, 255), 1)
-            cv2.line(frame, (int(data_r[k - 1][0]), int(data_r[k - 1][1])), (int(data_r[k][0]), int(data_r[k][1])),
-                        (0, 0, 255), 1)
+            cv2.line(frame, (int(data_w[k - 1][0]),int(data_w[k - 1][1])), (int(data_w[k][0]),int(data_w[k][1])), (36, 15, 255), first_move[0])
+            cv2.line(frame, (int(data_y[k - 1][0]),int(data_y[k - 1][1])), (int(data_y[k][0]),int(data_y[k][1])), (30, 227, 255), first_move[1])
+            cv2.line(frame, (int(data_r[k - 1][0]), int(data_r[k - 1][1])), (int(data_r[k][0]), int(data_r[k][1])),(14, 255, 255), first_move[2])
     font = cv2.FONT_HERSHEY_SIMPLEX
-    cv2.circle(frame, (40, 988), 5, (0, 255, 255), -1)
-    cv2.circle(frame, (40, 1018 ), 5, (255, 255, 255), -1)
-    cv2.circle(frame, (40, 1048), 5, (0, 0, 255), -1)
-    cv2.putText(frame, "Yellow ball speed(m/s):" + str(round(vel_y[i],2)) , (50, 995), font, 0.8, (255, 255, 255), 2,cv2.LINE_AA)
-    cv2.putText(frame, "White ball speed(m/s):" + str(round(vel_w[i],2)) , (50, 1025), font, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, "Red ball speed(m/s):" + str(round(vel_r[i],2)) , (50, 1055), font, 0.8, (255, 255, 255), 2, cv2.LINE_AA)
+    cv2.circle(frame, (40, 988), 5, (30, 227, 255), -1)
+    cv2.circle(frame, (40, 1018 ), 5, (36, 15, 255), -1)
+    cv2.circle(frame, (40, 1048), 5, (14, 255, 255), -1)
+    cv2.putText(frame, "Yellow ball speed(m/s):" + str(round(vel_y[i],2)) , (50, 995), font, 0.8, (36, 15, 255), 2,cv2.LINE_AA)
+    cv2.putText(frame, "White ball speed(m/s):" + str(round(vel_w[i],2)) , (50, 1025), font, 0.8, (36, 15, 255), 2, cv2.LINE_AA)
+    cv2.putText(frame, "Red ball speed(m/s):" + str(round(vel_r[i],2)) , (50, 1055), font, 0.8, (36, 15, 255), 2, cv2.LINE_AA)
     if vel_y[i] > max_vel_y:
         max_vel_y = vel_y[i]
     if vel_w[i] > max_vel_w:
         max_vel_w = vel_w[i]
     if vel_r[i] > max_vel_r:
         max_vel_r = vel_r[i]
-    cv2.putText(frame, ",max(m/s):" + str(round(max_vel_y, 2)), (400, 995), font, 0.8, (255, 255, 255), 2,cv2.LINE_AA)
-    cv2.putText(frame, ",max(m/s):" + str(round(max_vel_w, 2)), (400, 1025), font, 0.8, (255, 255, 255), 2,cv2.LINE_AA)
-    cv2.putText(frame, ",max(m/s):" + str(round(max_vel_r, 2)), (400, 1055), font, 0.8, (255, 255, 255), 2,cv2.LINE_AA)
+    cv2.putText(frame, ",max(m/s):" + str(round(max_vel_y, 2)), (400, 995), font, 0.8, (36, 15, 255), 2,cv2.LINE_AA)
+    cv2.putText(frame, ",max(m/s):" + str(round(max_vel_w, 2)), (400, 1025), font, 0.8, (36, 15, 255), 2,cv2.LINE_AA)
+    cv2.putText(frame, ",max(m/s):" + str(round(max_vel_r, 2)), (400, 1055), font, 0.8, (36, 15, 255), 2,cv2.LINE_AA)
     #out.write(frame)
-    imS = cv2.resize(frame, (1200, 706))
-    cv2.imshow('final', imS)#, cv2.waitKey(0), cv2.destroyAllWindows()
+    #imS = cv2.resize(frame, (1200, 706))
+    cv2.imshow('final', cv2.cvtColor(frame, cv2.COLOR_HSV2BGR))#, cv2.waitKey(0), cv2.destroyAllWindows()
     return max_vel_y,max_vel_w,max_vel_r
 
 

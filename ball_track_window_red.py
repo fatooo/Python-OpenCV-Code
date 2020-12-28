@@ -1,4 +1,4 @@
-def red_track(frame,i,data,data_r,template_o,x_prime,y_prime,velocity_x,velocity_y,velocity,x_start,y_start,x_stop,y_stop):
+def red_track(side_touch,frame,i,data,data_r,template_o,template_2_o,x_prime,y_prime,velocity_x,velocity_y,velocity,x_start,y_start,x_stop,y_stop):
 
     import cv2
     import numpy as np
@@ -21,7 +21,7 @@ def red_track(frame,i,data,data_r,template_o,x_prime,y_prime,velocity_x,velocity
     ppm_y = 637 #pixel per meter for y axis
     w = initial_window
     #template_o = cv2.imread('C:\\Users\\fatma\\PycharmProjects\\pythonProject\\Templates\\deneme_white.png')
-    template_2_o = cv2.imread('C:\\Users\\fatma\\PycharmProjects\\pythonProject\\Templates\\red_2.png')
+    #template_2_o = cv2.imread('C:\\Users\\fatma\\PycharmProjects\\pythonProject\\Templates\\red_2.png')
 
     template = np.float32(template_o)
     template_2= np.float32(template_2_o)
@@ -150,6 +150,7 @@ def red_track(frame,i,data,data_r,template_o,x_prime,y_prime,velocity_x,velocity
         #print(i,y_prime[i], x_prime[i])
 
         template_o = frame[int(x_prime[i]):int(x_prime[i])+template_x, int(y_prime[i]):int(y_prime[i])+template_y] #update the template with the ball found in the current frame
+        #cv2.imshow('crop', template_o), cv2.waitKey(0), cv2.destroyAllWindows()
         #template_o = cv2.GaussianBlur(template_o, (5, 5), -1)
 
             #print(template_x, template_y)
@@ -181,7 +182,10 @@ def red_track(frame,i,data,data_r,template_o,x_prime,y_prime,velocity_x,velocity
 
         velocity_x.append((center[1] - center_prev[1]) * fps / ppm_x)
         velocity_y.append((center[0] - center_prev[0]) * fps / ppm_y)
-        velocity.append(math.sqrt(math.pow(abs(velocity_x[i]), 2) + math.pow(abs(velocity_y[i]), 2)))
+        if side_touch:
+            velocity.append(velocity[i-1])
+        else:
+            velocity.append(math.sqrt(math.pow(abs(velocity_x[i]), 2) + math.pow(abs(velocity_y[i]), 2)))
         #print(velocity[i])
 
         cv2.circle(frame, (int(center[0]), int(center[1])), 0, (0, 255, 0), 10)
